@@ -1,0 +1,8 @@
+site_name: Learn Cryptography
+
+nav:
+    - 基本概念: basic.md
+    - About: about.md
+
+
+theme: readthedocs
