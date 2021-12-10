@@ -2,6 +2,8 @@ site_name: Learn Cryptography
 
 nav:
     - 基本概念: basic.md
+    - 凯撒密码: caesar
+    - 置换密码: Substitution
     - About: about.md
 
 
