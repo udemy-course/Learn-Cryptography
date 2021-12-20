@@ -1,7 +1,7 @@
 # 置换加密  Substitution Cipher
 
 
-上一期我们聊了`凯撒密码`，在继续聊新内容之前，先想一下，为什么凯撒加密非常容易被破解？
+上一节我们聊了`凯撒密码`，在继续聊新内容之前，先想一下，为什么凯撒加密非常容易被破解？
 
 原因就是因为字母表顺序平移这种算法的复杂度太低了，只有26种可能性的密钥，即使在没有计算机的古代也是非常容易破解的。
 
@@ -89,4 +89,347 @@ PCCPXW
 ------
 
 
-今天就到这里，下次我们聊聊如何快速破解置换加密。
+## 词频分析
+
+置换加密的复杂度虽然很高，但是这种加密有一个非常大的漏洞，就是人类自然语言都有一个基于统计学的词频分析，因为置换加密的密文是字母的一一对应，所以密文就保留了原始明文的词频特性。
+
+词频分析也是一门学科，对于英文来讲，比较公认的字母词频可以参考网络，比如https://en.wikipedia.org/wiki/Letter_frequency
+
+在英文语言里出现频率最高的前10个字母及频率分别为：
+
+| 字母       | 频率 |
+| ----------- | ----------- |
+| e      | 12.7%      |
+| t   | 9.06%        |
+| a    | 8.17%|
+| o | 7.51%|
+| i | 6.97%|
+
+
+## 基于词频破解置换加密
+
+
+假如我们有如下通过置换加密过的密文
+
+```python
+cipher = """lrvmnir bpr sumvbwvr jx bpr lmiwv yjeryrkbi jx qmbm wi
+bpr xjvni mkd ymibrut jx irhx wi bpr riirkvr jx
+ymbinlmtmipw utn qmumbr dj w ipmhh but bj rhnvwdmbr bpr
+yjeryrkbi jx bpr qmbm mvvjudwko bj yt wkbrusurbmbwjk
+lmird jk xjubt trmui jx ibndt
+  wb wi kjb mk rmit bmiq bj rashmwk rmvp yjeryrkb mkd wbi
+iwokwxwvmkvr mkd ijyr ynib urymwk nkrashmwkrd bj ower m
+vjyshrbr rashmkmbwjk jkr cjnhd pmer bj lr fnmhwxwrd mkd
+wkiswurd bj invp mk rabrkb bpmb pr vjnhd urmvp bpr ibmbr
+jx rkhwopbrkrd ywkd vmsmlhr jx urvjokwgwko ijnkdhrii
+ijnkd mkd ipmsrhrii ipmsr w dj kjb drry ytirhx bpr xwkmh
+mnbpjuwbt lnb yt rasruwrkvr cwbp qmbm pmi hrxb kj djnlb
+bpmb bpr xjhhjcwko wi bpr sujsru msshwvmbwjk mkd
+wkbrusurbmbwjk w jxxru yt bprjuwri wk bpr pjsr bpmb bpr
+riirkvr jx jqwkmcmk qmumbr cwhh urymwk wkbmvb"""
+```
+
+词频字典, 从高频到低频
+
+```python
+letter_freq = {
+    "e": 0.127,
+    "t": 0.0906,
+    "a": 0.0817,
+    "o": 0.0751,
+    "i": 0.0697,
+    "n": 0.0675,
+    "s": 0.0633,
+    "h": 0.0609,
+    "r": 0.0599,
+    "d": 0.0425,
+    "l": 0.0403,
+    "c": 0.0278,
+    "u": 0.0276,
+    "m": 0.0241,
+    "w": 0.0236,
+    "f": 0.0223,
+    "g": 0.0202,
+    "y": 0.0197,
+    "p": 0.0193,
+    "b": 0.015,
+    "v": 0.0098,
+    "k": 0.0077,
+    "j": 0.0015,
+    "x": 0.0015,
+    "q": 0.001,
+    "z": 0.0007,
+}
+```
+
+计算密文的词频：
+
+
+```python
+import string
+
+def cipher_frequency():
+    cipher_freq = {k: 0 for k in string.ascii_letters[:26]}
+    counter = 0
+    for k in cipher:
+        if k in cipher_freq:
+            cipher_freq[k] += 1
+            counter += 1
+    for k in cipher_freq:
+        cipher_freq[k] = round(cipher_freq[k] / counter, 4)
+
+    cipher_freq = dict(
+        sorted(cipher_freq.items(), key=lambda item: item[1], reverse=True)
+    )
+
+    print(cipher_freq)
+
+
+cipher_frequency()
+```
+
+结果如下：
+
+```python
+cipher_freq = {
+    "r": 0.13,
+    "b": 0.1053,
+    "m": 0.096,
+    "k": 0.0759,
+    "j": 0.0743,
+    "w": 0.0728,
+    "i": 0.0635,
+    "p": 0.0464,
+    "u": 0.0372,
+    "d": 0.0356,
+    "h": 0.0356,
+    "v": 0.0341,
+    "x": 0.031,
+    "y": 0.0294,
+    "n": 0.0263,
+    "s": 0.0263,
+    "t": 0.0201,
+    "l": 0.0124,
+    "o": 0.0108,
+    "q": 0.0108,
+    "a": 0.0077,
+    "c": 0.0077,
+    "e": 0.0077,
+    "f": 0.0015,
+    "g": 0.0015,
+    "z": 0.0,
+}
+```
+### 第一轮解密
+
+把``cipher_freq``和``letter_freq`` 对比，进行第一轮解密，比如把密文里的r替换成e，把b替换成t.....
+
+```
+r = e
+b = t
+...
+...
+```
+
+```python
+def guess():
+
+    decrypt_key = dict(zip(cipher_freq.keys(), letter_freq.keys()))
+
+    decrypted_str = ""
+    for s in cipher:
+        if s in decrypt_key:
+            decrypted_str += decrypt_key[s]
+        else:
+            decrypted_str += s
+    return decrypted_str
+```
+
+经过第一轮猜测，我们会得到解密后的“明文”
+
+```python
+yecawse the fractnce iu the yasnc mijemeots iu bata ns
+the uicws aod masterg iu selu ns the esseoce iu
+matswyagashn rgw barate di n shall trg ti elwcndate the
+mijemeots iu the bata accirdnop ti mg noterfretatnio
+yased io uirtg gears iu stwdg
+  nt ns oit ao easg tasb ti evflano each mijemeot aod nts
+snponuncaoce aod sime mwst remano woevflanoed ti pnje a
+cimflete evflaoatnio ioe kiwld haje ti ye xwalnuned aod
+nosfnred ti swch ao evteot that he ciwld reach the state
+iu eolnphteoed mnod cafayle iu reciponqnop siwodless
+siwod aod shafeless shafe n di oit deem mgselu the unoal
+awthirntg ywt mg evferneoce knth bata has leut oi diwyt
+that the uilliknop ns the frifer afflncatnio aod
+noterfretatnio n iuuer mg theirnes no the hife that the
+esseoce iu ibnoakao barate knll remano notact
+```
+
+### 第二轮调整
+
+通过第一轮纯词频的解密，得到的结果实际上可读性有了很大的提高，接下来可以进行几轮人工的调整。
+
+比如 ``easg`` 应该是 ``easy``, 所以可以修改下我们的解密词典， 原本t翻译成g，应该改成t翻译成y
+比如 ``mwst`` 应该是 ``must``,  原本n翻译成w，应该改成n翻译成u
+
+
+调整后解密为
+
+```python
+yecause the fractnce iu the yasnc mijemeots iu bata ns
+the uicus aod mastery iu selu ns the esseoce iu
+matsuyayashn ryu barate di n shall try ti elucndate the
+mijemeots iu the bata accirdnop ti my noterfretatnio
+yased io uirty years iu study
+  nt ns oit ao easy tasb ti evflano each mijemeot aod nts
+snponuncaoce aod sime must remano uoevflanoed ti pnje a
+cimflete evflaoatnio ioe kiuld haje ti ye xualnuned aod
+nosfnred ti such ao evteot that he ciuld reach the state
+iu eolnphteoed mnod cafayle iu reciponqnop siuodless
+siuod aod shafeless shafe n di oit deem myselu the unoal
+authirnty yut my evferneoce knth bata has leut oi diuyt
+that the uilliknop ns the frifer afflncatnio aod
+noterfretatnio n iuuer my theirnes no the hif
+```
+
+继续调整，比如
+
+yecause 应该是 because
+
+tasb 应该是 task
+
+
+### 第N论调整
+
+以此类推，经过几轮调整，我们就可以基本得到加密前的明文了。 下面是几轮过后的样子
+
+```
+because the practice of the basic movements of kata is
+the focus and mastery of self is the essence of
+matsubayashi ryu karate do i shall try to elucidate the
+movements of the kata according to my interpretation
+based on forty years of study
+  it is not an easy task to explain each movement and its
+significance and some must remain unexplained to give a
+complete explanation one could have to be qualified and
+inspired to such an extent that he could reach the state
+of enlightened mind capable of recognizing soundless
+sound and shapeless shape i do not deem myself the final
+authority but my experience cith kata has left no doubt
+that the follocing is the proper application and
+interpretation i offer my theories in the hope that the
+essence of okinacan karate cill remain intact
+```
+
+附代码
+
+```python
+import string
+
+cipher = """lrvmnir bpr sumvbwvr jx bpr lmiwv yjeryrkbi jx qmbm wi
+bpr xjvni mkd ymibrut jx irhx wi bpr riirkvr jx
+ymbinlmtmipw utn qmumbr dj w ipmhh but bj rhnvwdmbr bpr
+yjeryrkbi jx bpr qmbm mvvjudwko bj yt wkbrusurbmbwjk
+lmird jk xjubt trmui jx ibndt
+  wb wi kjb mk rmit bmiq bj rashmwk rmvp yjeryrkb mkd wbi
+iwokwxwvmkvr mkd ijyr ynib urymwk nkrashmwkrd bj ower m
+vjyshrbr rashmkmbwjk jkr cjnhd pmer bj lr fnmhwxwrd mkd
+wkiswurd bj invp mk rabrkb bpmb pr vjnhd urmvp bpr ibmbr
+jx rkhwopbrkrd ywkd vmsmlhr jx urvjokwgwko ijnkdhrii
+ijnkd mkd ipmsrhrii ipmsr w dj kjb drry ytirhx bpr xwkmh
+mnbpjuwbt lnb yt rasruwrkvr cwbp qmbm pmi hrxb kj djnlb
+bpmb bpr xjhhjcwko wi bpr sujsru msshwvmbwjk mkd
+wkbrusurbmbwjk w jxxru yt bprjuwri wk bpr pjsr bpmb bpr
+riirkvr jx jqwkmcmk qmumbr cwhh urymwk wkbmvb"""
+
+letter_freq = {
+    "e": 0.127,
+    "t": 0.0906,
+    "a": 0.0817,
+    "o": 0.0751,
+    "i": 0.0697,
+    "n": 0.0675,
+    "s": 0.0633,
+    "h": 0.0609,
+    "r": 0.0599,
+    "d": 0.0425,
+    "l": 0.0403,
+    "c": 0.0278,
+    "u": 0.0276,
+    "m": 0.0241,
+    "w": 0.0236,
+    "f": 0.0223,
+    "g": 0.0202,
+    "y": 0.0197,
+    "p": 0.0193,
+    "b": 0.015,
+    "v": 0.0098,
+    "k": 0.0077,
+    "j": 0.0015,
+    "x": 0.0015,
+    "q": 0.001,
+    "z": 0.0007,
+}
+
+
+def cipher_frequency():
+    cipher_freq = {k: 0 for k in string.ascii_letters[:26]}
+    counter = 0
+    for k in cipher:
+        if k in cipher_freq:
+            cipher_freq[k] += 1
+            counter += 1
+    for k in cipher_freq:
+        cipher_freq[k] = round(cipher_freq[k] / counter, 4)
+
+    return dict(sorted(cipher_freq.items(), key=lambda item: item[1], reverse=True))
+
+
+cipher_freq = cipher_frequency()
+
+
+def guess():
+
+    decrypt_key = dict(zip(cipher_freq.keys(), letter_freq.keys()))
+    # 调整
+    decrypted_str = ""
+    for s in cipher:
+        if s in decrypt_key:
+            decrypted_str += decrypt_key[s]
+        else:
+            decrypted_str += s
+    return decrypted_str
+
+
+def improve(cipher):
+    improved_key = {
+        "g": "y",
+        "w": "u",
+        "y": "b",
+        "b": "k",
+        "n": "i",
+        "o": "n",
+        "i": "o",
+        "u": "f",
+        "j": "v",
+        "f": "p",
+        "p": "g",
+        "v": "x",
+        "k": "c",
+        "x": "q",
+        "q": "z",
+    }
+    decrypted_str = ""
+    for s in cipher:
+        if s in improved_key:
+            decrypted_str += improved_key[s]
+        else:
+            decrypted_str += s
+    return decrypted_str
+
+
+print(improve(guess()))
+
+```
+
+可以自己玩玩。
