@@ -4,6 +4,7 @@ nav:
     - 基本概念: basic.md
     - 凯撒密码: caesar
     - 置换密码: Substitution
+    - One-Time Pad: one-time-pad
     - About: about.md
 
 
