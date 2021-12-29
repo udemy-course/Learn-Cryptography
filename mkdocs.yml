@@ -5,6 +5,8 @@ nav:
     - 凯撒密码: caesar
     - 置换密码: Substitution
     - One-Time Pad: one-time-pad
+    - Pseudorandomness: pseudo-random
+    - Stream Cipher: stream-cipher
     - About: about.md
 
 
