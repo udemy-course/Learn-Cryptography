@@ -32,5 +32,55 @@ One-Time Pad是符合`香农`提出的perfect secrecy，由于密钥空间等于
 流加密解决了One-Time Pad中的key生成和分发的问题。
 
 - 生成，伪随机数生成算法
-- 分发，伪随机数生成算法可以让发送者和接收者能生成相同的随机数作为key用于加密和解密消息
+- 分发，伪随机数生成算法可以让发送者和接收者能生成相同的随机数作为key用于加密和解密消息(只要使用相同的种子)
+
+## 流加密的Python演示
+
+这里使用我们上一期聊的`线性同余方法`算法来生成随机数
+
+```python
+def generate_key_bytes(seed, m=2 ** 31, a=1103515245, c=12345):
+    """Linear congruential generator."""
+    return (a * seed + c) % m % 256
+
+
+def encrypt(key, message):
+    return bytes([message[i] ^ key for i in range(len(message))])
+
+
+message = b"ATTACK"
+
+key = generate_key_bytes(seed=654321)
+
+encrypted_message = encrypt(key, message)
+print(encrypted_message)
+
+decrypted_message = encrypt(key, encrypted_message)
+
+print(decrypted_message)
+```
+
+
+## 流加密的应用
+
+流加密属于现代密码学的内容，曾经有比较多得实际应用，当然这个曾经并不遥远， 例如
+
+- A5/1 (G2 encryption) - 54 bits
+- A5/2 (export vesion出口版本，安全性比A5/1弱) - 17 bits
+- RC4(WEP, SSL) - 40-2048 bits
+
+其中 `A5/1` `A5/2` 是GSM标准中提供行动通信保密性的流密码，是GSM的7种加密算法之一。在2014年曾经有多达70个移动终端通过A5/1实现其语音通信的加密。
+
+至于说在GSM系统中到底是如何使用流密码进行加密的，感兴趣的同学可以自行查找资料学习。
+
+RC4加密也是流加密算法，曾经也是TSL可采用的算法之一，不过现在已经不推荐使用了，因为不安全。
+
+
+## 流加密的问题
+
+流加密存在很多问题，导致目前在实际中已经很少使用了，存在的问题比如：
+
+- key的重复性使用
+- 有一些key的空间不够大，导致暴力破解存在可能性
+- 攻击者多次截取加密数据，可以比较容易破解
 
