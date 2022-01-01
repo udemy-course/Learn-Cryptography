@@ -7,6 +7,7 @@ nav:
     - One-Time Pad: one-time-pad
     - Pseudorandomness: pseudo-random
     - Stream Cipher: stream-cipher
+    - Block Cipher: block-cipher
     - About: about.md
 
 
