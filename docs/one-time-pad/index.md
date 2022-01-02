@@ -24,7 +24,7 @@
 
 先来回顾一下数学里的异或操作。如果大家在大学学过计算机或者数字电路的话，应该会异或门(XOR gate)很熟悉，如下图：
 
-![mkdocs](../img/XOR_gate.png)
+![mkdocs](../img/XOR_gate.PNG)
 
 
 ### Python里的异或操作
