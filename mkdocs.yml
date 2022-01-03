@@ -9,6 +9,7 @@ nav:
     - Stream Cipher: stream-cipher
     - Block Cipher: block-cipher
     - Diffie–Hellman key exchange: Diffie_Hellman-key-exchange
+    - Public Key Encryption Systems: RSA
     - About: about.md
 
 
