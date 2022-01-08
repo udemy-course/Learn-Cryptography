@@ -1,6 +1,10 @@
 site_name: Learn Cryptography
 
+# plugins:
+#   - section-index
+
 nav:
+    - Home: index.md
     - 基本概念: basic.md
     - 凯撒密码: caesar
     - 置换密码: Substitution
@@ -11,6 +15,9 @@ nav:
     - Diffie–Hellman Key Exchange: Diffie_Hellman-key-exchange
     - Public Key Infrastructure: RSA
     - Hash Function: hash
+    - Digital Signature:
+        - Overview: digital-signature/index.md
+        - RSA Signature: digital-signature/rsa-signature.md
     - About: about.md
 
 
