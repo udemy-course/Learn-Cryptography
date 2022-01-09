@@ -17,7 +17,8 @@ nav:
     - Hash Function: hash
     - Digital Signature:
         - Overview: digital-signature/index.md
-        - RSA Signature: digital-signature/rsa-signature.md
+        - RSA Sign/Verify with Python: digital-signature/rsa-signature-python.md
+        - RSA Sign/Verify with OpenSSL: digital-signature/rsa-signature-ssl.md
     - About: about.md
 
 

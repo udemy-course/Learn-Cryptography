@@ -13,8 +13,8 @@ def get_prime(size):
             return num
 
 
-p = get_prime(100)
-q = get_prime(100)
+p = get_prime(10000)
+q = get_prime(10000)
 
 N = p * q
 
@@ -23,8 +23,8 @@ print(f"q={q}")
 print(f"N=p*q={p*q}")
 
 
-p = 718411
-q = 686149
+# p = 718411
+# q = 686149
 r = (p - 1) * (q - 1)
 e = 65537
 
