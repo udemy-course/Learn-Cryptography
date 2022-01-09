@@ -18,7 +18,7 @@ nav:
     - Digital Signature:
         - Overview: digital-signature/index.md
         - RSA Sign/Verify with Python: digital-signature/rsa-signature-python.md
-        - RSA Sign/Verify with OpenSSL: digital-signature/rsa-signature-ssl.md
+        - RSA Sign/Verify with OpenSSL: digital-signature/rsa-signature-openssl.md
     - About: about.md
 
 
