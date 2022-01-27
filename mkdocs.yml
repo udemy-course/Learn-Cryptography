@@ -20,7 +20,7 @@ nav:
         - RSA Sign/Verify with Python: digital-signature/rsa-signature-python.md
         - RSA Sign/Verify with OpenSSL: digital-signature/rsa-signature-openssl.md
     - Message Authentication Codes(MAC): mac
-    - Certificates: certificates
+    - Digital Certificates: digital-certificates
     - SSL,TLS and HTTPS:
         - Overview: ssl-tls-https/index.md
     - About: about.md
