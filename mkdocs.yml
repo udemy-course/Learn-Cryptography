@@ -23,6 +23,7 @@ nav:
     - Digital Certificates:
         - Overview: digital-certificates/index.md
         - Openssl Self-Sign Certificates: digital-certificates/openssl-self-sign.md
+        - Chain of Certificates: digital-certificates/chain-of-trust.md
     - About: about.md
 
 
