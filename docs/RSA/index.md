@@ -25,30 +25,28 @@
 
 第一步，随机选择俩个不同的`质数`，或者叫`素数`，p和q，得到 `N=p*q`
 
+这里用到的是sympy这个python库，建议大家使用 [Anaconda](https://www.anaconda.com/products/distribution) 的jupyter notebook
+
 ```python
-import random
+import sympy
 
+min_n = 1000
+max_n = 5000
 
-def is_prime(n):
-    return n > 1 and all(n % i for i in range(2, int(n ** 0.5) + 1))
-
-
-def get_prime(size):
+def get_pq():
 
     while True:
-        num = random.randrange(size, size ** 2)
-        if is_prime(num):
-            return num
+        p = sympy.randprime(min_n, max_n)
+        q = sympy.randprime(min_n, max_n)
+        if p != q:
+            return p, q
 
-
-p = get_prime(100)
-q = get_prime(100)
+p, q = get_pq()
 
 N = p * q
-
-print(f"p={p}")
-print(f"q={q}")
-print(f"N=p*q={p*q}")
+print(f"p = {p}")
+print(f"q = {q}")
+print(f"N = p*q = {p*q}")
 
 ```
 
@@ -56,9 +54,9 @@ print(f"N=p*q={p*q}")
 
 
 ```python
-p=421
-q=5441
-N=p*q=2290661
+p = 4547
+q = 2221
+N = p*q = 10098887
 ```
 
 
@@ -69,72 +67,43 @@ r =  φ(N) =  φ(p) x  φ(q) = (p-1)(q-1)
 ```
 
 ``` python
->>> p=421
->>> q=5441
 >>> r = (p - 1)*(q - 1)
 >>> r
-2284800
->>>
+10092120
 ```
 
 第三步，随机选择一个整数e，条件是1< e < φ(N)，且e与φ(N) 互质。
 
- φ(N) = 2284800, 也就是在1到2284800之间，选择一个数e，e和2284800互为质数（也就是他俩的最大公约数=1）
+ φ(N) = 10092120, 也就是在1到10092120之间，选择一个数e，e和10092120互为质数（也就是他俩的最大公约数=1）
 
 满足条件的e很多，如果一个一个算，这一步会耗费大量时间，通常我们会让 `e=65537`，至于为什么，可以参考这篇文章[https://www.johndcook.com/blog/2018/12/12/rsa-exponent/](https://www.johndcook.com/blog/2018/12/12/rsa-exponent/)
 
 
-下面是如果你真的想去随机找e，代码如下，如果r值很大，运行时间会很长。
-
-```python
-import math
-import random
-
-p=421
-q=5441
-r = (p - 1)*(q - 1)
-
-def get_e(r):
-    e_list = []
-    for i in range(2, r):
-        if math.gcd(i, r) == 1:
-            e_list.append(i)
-            print(i)
-    return random.choice(e_list)
-
-e = get_e(r)
-print(e)
-```
 
 第四步，求得e关于r的模逆元，命名为d，如果模逆元不存在，则重复步骤一二三。
 
 
 ```python
+import random
+import math
 
-p=421
-q=5441
-r = (p - 1)*(q - 1)
-e = 65537
-
-def get_d(e, r):
+def get_d(r):
+    e = 65537
     for d in range(2, r):
         if d*e % r == 1:
             return d
 
-    return False
-
-d = get_d(e, r)
-if d:
-    print(d)
+d = get_d(r)
+print(d)
 ```
 
-得到 `d=489473`
+得到 `d=2217473`
 
 最后，将N和e封装成公钥，N和d封装成私钥。
 
-公钥: N = 2290661, e = 65537
+公钥: N = 10098887, e = 65537
 
-私钥：N = 2290661, d = 489473
+私钥：N = 10098887, d = 2217473
 
 
 ### 加密和解密
@@ -144,7 +113,7 @@ if d:
 
 ```python
 m = 100
-N = 2290661
+N = 10098887
 e = 65537
 
 cipher = m**e % N
@@ -152,15 +121,15 @@ cipher = m**e % N
 print(cipher)
 ```
 
-密文为 cipher = 71194
+密文为 cipher = 7065819
 
 
 解密要用到私钥（N，d），解密就是把密文进行d次方，然后对N取余
 
 ```python
-N = 2290661
-d = 489473
-cipher = 71194
+N = 10098887
+d = 2217473
+cipher = 7065819
 
 plaintext = cipher**d % N
 
@@ -188,12 +157,12 @@ N = p x q
 
 
 ```python
-p=421
-q=5441
-N=p*q=2290661
+p = 4547
+q = 2221
+N = p*q = 10098887
 ```
 
-N转换成二进制是1000101111001111100101，也就是22位，所以最后生成的key就是22位的。
+N转换成二进制是100110100001100011000111，也就是24位，所以最后生成的key就是24位的。
 
 以下内容来自维基百科：
 
@@ -232,9 +201,9 @@ RSA-768表示如下：
 以上面我们的N为例
 
 ```python
-p=421
-q=5441
-N=p*q=2290661
+p = 4547
+q = 2221
+N = p*q = 10098887
 ```
 
 通过N去破解p和q非常简单，这个N只有22位，一秒就可以出结果。
@@ -242,17 +211,17 @@ N=p*q=2290661
 ```python
 from sympy import factorint
 
-a = factorint(2290661)
+a = factorint(10098887)
 print(a)
 ```
 
 得到的结果a是
 
 ```python
-{421: 1, 5441: 1}
+{2221: 1, 4547: 1}
 ```
 
-也就是421和5441.
+也就是2221和4547.
 
 
 ### 最后
